@@ -9,7 +9,7 @@ Route::get('/', function () {
 });
 
 Route::get('/google-auth-url', function () {
-    $response = Http::get('http://localhost:3002/oauth/auth');
+    $response = Http::get('https://stg-ch-ai.beoverflow.com/oauth/auth');
     return $response->json();
 })->name('login');
 
@@ -28,3 +28,25 @@ Route::get('/home', function () {
     return view('home');
 })->name('home');
 
+Route::post('/create-project', function () {
+    $accessToken = session('access_token');
+    $userEmail = session('user_email');
+    $projectName = 'project12345';
+
+    $response = Http::withHeaders([
+        'Authorization' => 'Bearer ' . $accessToken,
+        'Content-Type' => 'application/json'
+    ])->post('https://stg-ch-ai.beoverflow.com/oauth/create-project', [
+        'email' => $userEmail,
+        'projectName' => $projectName
+    ]);
+
+    if ($response->successful()) {
+        return response()->json($response->json());
+    } else {
+        return response()->json([
+            'error' => $response->status(),
+            'message' => $response->body()
+        ], $response->status());
+    }
+})->name('create-project');
